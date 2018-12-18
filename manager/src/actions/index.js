@@ -1,4 +1,4 @@
-import { EMAIL_CHANGED, PASSWORD_CHANGED, LOGIN_USER_SUCCESS } from './types';
+import { EMAIL_CHANGED, PASSWORD_CHANGED, LOGIN_USER_SUCCESS, LOGIN_STARTED, LOGIN_ERROR } from './types';
 import firebase from 'firebase';
 
 
@@ -18,13 +18,35 @@ export const passwordChanged = (text) => {
 
 export const loginUser = ({ email, password }) => {
     return (dispatch) => { // manual dispatcher of actions
+        dispatch({ type: LOGIN_STARTED });
         firebase
             .auth() // async request
             .signInWithEmailAndPassword(email, password)
-            .then(user => console.log(user))
             .then(user => {
-                dispatch({ type: LOGIN_USER_SUCCESS, payload: user});
+                loginUserSuccess(dispatch, user);
             })
-            ;
+            .catch((error) => {
+                console.log(error);
+                firebase.auth().createUserWithEmailAndPassword(email, password)
+                    .then(user => {
+                        loginUserSuccess(dispatch, user);
+                    })
+                    .catch(() => loginUserFail(dispatch));
+            });
     };
+};
+
+const loginUserSuccess = (dispatch, user) => {
+    console.log("Successfully logged in a user:");
+    console.log(user);
+    dispatch({
+        type: LOGIN_USER_SUCCESS,
+        payload: user
+    });
+};
+
+const loginUserFail = (dispatch) => {
+    dispatch({
+        type: LOGIN_ERROR,
+    });
 };
