@@ -24,9 +24,7 @@ class App extends Component {
   render() {
     return (
       <Provider store={createStore(reducers, {}, applyMiddleware(ReduxThunk))}>
-        <SafeAreaView style={{flex: 1}}>
-          <Router />
-        </SafeAreaView>
+        <Router />
       </Provider>
     );
   }
